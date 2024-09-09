@@ -6,8 +6,12 @@
 //
 
 import SwiftUI
+import OSLog
 
 struct ContentView: View {
+    
+    private static let logger = Logger()
+    
     @State private var viewModel: ViewModel? = DataUtils.loadingViewModel()
     @State private var hasFetchedStartLocation = false
     
@@ -32,11 +36,12 @@ struct ContentView: View {
                             .cornerRadius(Styles.CORNER_RADIUS)
                         Spacer()
                     } else if !viewModelUnwrapped.canFindLocation {
-                        Text("Couldn't find that location, Sorry!")
+                        ErrorView(errorText: "CANT_FIND_LOCATION_ERROR_TEXT")
                         Spacer()
                     }
                 } else {
-                    Text("Something went wrong - try again later!")
+                    ErrorView(errorText: "UNKNOWN_ERROR_TEXT")
+                    Spacer()
                 }
             }
             .frame(maxHeight:.infinity)
@@ -55,7 +60,7 @@ struct ContentView: View {
             do {
                 try viewModel = await WeatherClient.realTimeWeather(location: Constants.START_LOCATION)
             } catch {
-                print("\(error)")
+                ContentView.logger.error("\(error, privacy: .public)")
             }
         }
     }

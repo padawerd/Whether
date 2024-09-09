@@ -6,8 +6,11 @@
 //
 
 import SwiftUI
+import OSLog
 
 struct LocationView: View {
+    
+    private static let logger = Logger()
     
     @State private var text = ""
     @State private var lastSearch = ""
@@ -20,7 +23,7 @@ struct LocationView: View {
         HStack {
             TextField("",
                       text: $text,
-                      prompt: Text("Where are you?")
+                      prompt: Text("SEARCH_PLACEHOLDER_TEXT")
                                 .foregroundStyle(Styles.SECONDARY_FOREGROUND_COLOR))
             .padding([.leading, .trailing], 5)
             .padding([.top, .bottom], 10)
@@ -46,7 +49,7 @@ struct LocationView: View {
             do {
                 try viewModel = await WeatherClient.realTimeWeather(location: text)
             } catch {
-                print("\(error)")
+                LocationView.logger.error("\(error, privacy: .public)")
             }
         }
     }

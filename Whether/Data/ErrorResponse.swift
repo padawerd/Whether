@@ -5,11 +5,10 @@
 //  Created by David Padawer on 9/7/24.
 //
 
-struct Error: Codable {
-    let code: Int
-    let message: String
-}
-
 struct ErrorResponse: Codable {
+    struct Error: Codable {
+        let code: Int
+        let message: String
+    }
     let error: Error
 }

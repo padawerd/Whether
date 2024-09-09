@@ -7,7 +7,6 @@
 
 import Foundation
 
-// TODO: coding keys
 // TODO: Too dependent on weatherapi structure?
 struct ForecastResponse: Codable {
     

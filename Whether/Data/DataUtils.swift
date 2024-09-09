@@ -6,13 +6,21 @@
 //
 
 import Foundation
+import OSLog
+import SwiftUI
 
 struct DataUtils {
     
+    static let logger = Logger()
+    
     // Expects a time of the form "YYYY-MM-DD HH:MM"
+    // DateTimeFormatter would be good if we needed timezones and such, but regex is plenty for now.
     static func formatTime(time: String) -> String? {
-        let separators = CharacterSet(charactersIn: " ")
-        return time.components(separatedBy: separators).last
+        let dateRegex = /([0-9]{4}-[0-9]{2}-[0-9]{2}) ([0-9]{2}:[0-9]{2})/
+        if let match = time.firstMatch(of: dateRegex) {
+            return String(match.2)
+        }
+        return nil
     }
     
     // Expects a String representing a scheme-relative URL.
@@ -39,54 +47,43 @@ struct DataUtils {
         return "\(location.name), \(location.region)"
     }
     
-    static func buildViewModel(forecastResponse: ForecastResponse?, errorResponse: ErrorResponse?) -> ViewModel? {
-        
-        if let errorResponseUnwrapped = errorResponse {
-            if errorResponseUnwrapped.error.code == 1006 {
-                return ViewModel(canFindLocation: false,
-                                 isLoading: false,
-                                 current: nil,
-                                 future: nil,
-                                 location: nil)
-            } else {
-                // TODO: log about it
-                return nil
-            }
-        }
-        
-        guard let forecastResponseUnwrapped = forecastResponse else {
-            return nil
-        }
-            
-        // location
-        let locationName = locationName(location: forecastResponseUnwrapped.location)
-        let timeEpoch = forecastResponseUnwrapped.location.localtime_epoch
-        guard let locationTime = formatTime(time: forecastResponseUnwrapped.location.localtime) else {
+    static func buildLocation(forecastResponse: ForecastResponse) -> ViewModel.Location? {
+        let locationName = locationName(location: forecastResponse.location)
+        let timeEpoch = forecastResponse.location.localtime_epoch
+        guard let locationTime = formatTime(time: forecastResponse.location.localtime) else {
+            logger.error("Failed to format location time")
             return nil
         }
         let location = ViewModel.Location(name: locationName, time: locationTime, timeEpoch: timeEpoch)
-            
-        // current
-        guard let iconUrl = buildBigIconUrl(urlString: forecastResponseUnwrapped.current.condition.icon) else {
+        return location
+    }
+    
+    static func buildCurrent(forecastResponse: ForecastResponse) -> ViewModel.Current? {
+        guard let iconUrl = buildBigIconUrl(urlString: forecastResponse.current.condition.icon) else {
+            logger.error("Failed to build big icon URL")
             return nil
         }
-        let conditionText = forecastResponseUnwrapped.current.condition.text
-        let temperature = "\(forecastResponseUnwrapped.current.temp_f)° F"
-        guard let forecastDay = forecastResponseUnwrapped.forecast.forecastday.first else {
+        let conditionText = forecastResponse.current.condition.text
+        let temperature = LocalizedStringKey("TEMPERATURE_FORMAT_\(String(forecastResponse.current.temp_f))")
+        guard let forecastDay = forecastResponse.forecast.forecastday.first else {
+            logger.error("Failed to find any forecast days")
             return nil
         }
-        let low = "Low: \(forecastDay.day.mintemp_f)"
-        let high = "High: \(forecastDay.day.maxtemp_f)"
+        let low = LocalizedStringKey("LOW_TEMPERATURE_FORMAT_\(String(forecastDay.day.mintemp_f))")
+        let high = LocalizedStringKey("HIGH_TEMPERATURE_FORMAT_\(String(forecastDay.day.mintemp_f))")
         let current = ViewModel.Current(iconUrl: iconUrl,
                                         conditionText: conditionText,
                                         temperature: temperature,
                                         low: low,
                                         high: high)
-        
-        
-        // future
-        
-        
+        return current
+    }
+    
+    static func buildFuture(forecastResponse: ForecastResponse) -> ViewModel.Future? {
+        guard let forecastDay = forecastResponse.forecast.forecastday.first else {
+            logger.error("Failed to find any forecast days")
+            return nil
+        }
         // not map, because we want to be able to return from the function if anything's missing
         var futureHours: [ViewModel.FutureHour] = []
         for hour in forecastDay.hour {
@@ -94,8 +91,8 @@ struct DataUtils {
             guard let hourIconUrl = buildIconUrl(urlString:hour.condition.icon) else {
                 return nil
             }
-            let probabilityOfPrecipitation = "\(probabilityOfPrecipitation(hour: hour))% PoP"
-            let temperature = "\(hour.temp_f)° F"
+            let probabilityOfPrecipitation = LocalizedStringKey("PROBABILITY_OF_PRECIPITATION_FORMAT_\(String(probabilityOfPrecipitation(hour: hour)))")
+            let temperature = LocalizedStringKey("TEMPERATURE_FORMAT_\(String(hour.temp_f))")
             guard let time = formatTime(time: hour.time) else {
                 return nil
             }
@@ -109,6 +106,32 @@ struct DataUtils {
         }
         
         let future = ViewModel.Future(futureHours: futureHours)
+        return future
+    }
+    
+    static func buildViewModel(forecastResponse: ForecastResponse?, errorResponse: ErrorResponse?) -> ViewModel? {
+        
+        if let errorResponseUnwrapped = errorResponse {
+            if errorResponseUnwrapped.error.code == 1006 {
+                return ViewModel(canFindLocation: false,
+                                 isLoading: false,
+                                 current: nil,
+                                 future: nil,
+                                 location: nil)
+            } else {
+                logger.error("Got an error response but didn't recognize the code: \(errorResponseUnwrapped.error.code, privacy: .public)")
+                return nil
+            }
+        }
+        
+        guard let forecastResponseUnwrapped = forecastResponse else {
+            logger.error("Failed to deserialize ForecastResponse")
+            return nil
+        }
+            
+        let location = buildLocation(forecastResponse: forecastResponseUnwrapped)
+        let current = buildCurrent(forecastResponse: forecastResponseUnwrapped)
+        let future = buildFuture(forecastResponse: forecastResponseUnwrapped)
         
         return ViewModel(canFindLocation: true,
                          isLoading: false,

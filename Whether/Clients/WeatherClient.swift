@@ -9,8 +9,8 @@ import Foundation
 
 struct WeatherClient {
     
-    // TODO: don't hardcode
-    private static let apiKey = "16309e007f0f40a5a80123044221507"
+    // Expects an xcconfig at Whether/Config.xcconfig
+    private static let apiKey = Bundle.main.infoDictionary?["WEATHER_API_KEY"] as? String
     static let scheme = "https"
     private static let host = "api.weatherapi.com"
     private static let forecastPath = "/v1/forecast.json"
@@ -19,12 +19,15 @@ struct WeatherClient {
     
     // call out decision to not use Alamofire
     static func realTimeWeather(location: String) async throws -> ViewModel? {
+        guard let apiKeyUnwrapped = apiKey else {
+            return nil
+        }
         var urlComponents = URLComponents()
         urlComponents.scheme = scheme
         urlComponents.host = host
         urlComponents.path = forecastPath
         urlComponents.queryItems = [
-            URLQueryItem(name: apiQueryKey, value: apiKey),
+            URLQueryItem(name: apiQueryKey, value: apiKeyUnwrapped),
             URLQueryItem(name: locationQueryKey, value: location)
         ]
         

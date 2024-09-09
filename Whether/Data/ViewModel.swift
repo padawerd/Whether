@@ -6,21 +6,22 @@
 //
 
 import Foundation
+import SwiftUI
 
 struct ViewModel {
     
     struct Current {
         let iconUrl: URL
         let conditionText: String
-        let temperature: String
-        let low: String
-        let high: String
+        let temperature: LocalizedStringKey
+        let low: LocalizedStringKey
+        let high: LocalizedStringKey
     }
     
     struct FutureHour {
         let iconUrl: URL
-        let probabilityOfPrecipitation: String
-        let temperature: String
+        let probabilityOfPrecipitation: LocalizedStringKey
+        let temperature: LocalizedStringKey
         let time: String
         let timeEpoch: Int
     }

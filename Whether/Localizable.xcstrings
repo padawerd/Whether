@@ -1,0 +1,85 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    "CANT_FIND_LOCATION_ERROR_TEXT" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't find that location, Sorry!"
+          }
+        }
+      }
+    },
+    "HIGH_TEMPERATURE_FORMAT_%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "High: %@° F"
+          }
+        }
+      }
+    },
+    "LOW_TEMPERATURE_FORMAT_%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low: %@° F"
+          }
+        }
+      }
+    },
+    "PROBABILITY_OF_PRECIPITATION_FORMAT_%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ PoP"
+          }
+        }
+      }
+    },
+    "SEARCH_PLACEHOLDER_TEXT" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Where are you?"
+          }
+        }
+      }
+    },
+    "TEMPERATURE_FORMAT_%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@° F"
+          }
+        }
+      }
+    },
+    "UNKNOWN_ERROR_TEXT" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Something went wrong - try again later!"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
